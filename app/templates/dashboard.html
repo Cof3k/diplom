@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель контроля посещаемости</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        main {
+            padding: 30px 40px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card-title {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f4e79;
+        }
+
+        .actions {
+            margin-bottom: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .check-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 15px;
+    margin-bottom: 10px;
+}
+
+.check-form label {
+    font-weight: bold;
+    color: #374151;
+}
+
+.check-form input[type="date"] {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.button:hover {
+    background: #1d4ed8;
+}
+
+.button.danger {
+    background: #dc2626;
+}
+
+.button.danger:hover {
+    background: #b91c1c;
+}
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #eef3f7;
+            text-align: left;
+            padding: 10px;
+        }
+
+        td {
+            border-top: 1px solid #e1e5e8;
+            padding: 10px;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-size: 13px;
+        }
+
+        .late {
+            background: #d97706;
+        }
+
+        .absence {
+            background: #dc2626;
+        }
+
+        .empty {
+            color: #777;
+            padding: 20px 0;
+        }
+
+        .links {
+            margin-top: 20px;
+        }
+
+        .links a {
+            display: inline-block;
+            margin-right: 10px;
+            color: #1f4e79;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Система контроля опозданий сотрудников больницы</h1>
+</header>
+
+<main>
+    <div class="cards">
+        <div class="card">
+            <div class="card-title">Сотрудники</div>
+            <div class="card-value">{{ employees_count }}</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Графики работы</div>
+            <div class="card-value">{{ schedules_count }}</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">События СКУД</div>
+            <div class="card-value">{{ access_events_count }}</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Нарушения</div>
+            <div class="card-value">{{ violations_count }}</div>
+        </div>
+    </div>
+
+<div class="actions">
+    <form class="check-form" action="/run-check-lateness" method="get">
+        <label for="lateness-date">Дата проверки:</label>
+        <input id="lateness-date" type="date" name="work_date" value="2026-05-06">
+        <button class="button" type="submit">Проверить опоздания</button>
+    </form>
+
+    <form class="check-form" action="/run-check-absences" method="get">
+        <label for="absence-date">Дата проверки:</label>
+        <input id="absence-date" type="date" name="work_date" value="2026-05-06">
+        <button class="button danger" type="submit">Проверить неявки</button>
+    </form>
+</div>
+
+    <div class="section">
+        <h2>Последние нарушения</h2>
+
+        {% if latest_violations %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Сотрудник ID</th>
+                        <th>Дата</th>
+                        <th>Тип нарушения</th>
+                        <th>Плановое время</th>
+                        <th>Фактическое время</th>
+                        <th>Минуты</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for violation in latest_violations %}
+                        <tr>
+                            <td>{{ violation.id }}</td>
+                            <td>{{ violation.employee_id }}</td>
+                            <td>{{ violation.work_date }}</td>
+                            <td>
+                                {% if violation.violation_type == "Опоздание" %}
+                                    <span class="badge late">Опоздание</span>
+                                {% elif violation.violation_type == "Неявка" %}
+                                    <span class="badge absence">Неявка</span>
+                                {% else %}
+                                    {{ violation.violation_type }}
+                                {% endif %}
+                            </td>
+                            <td>{{ violation.planned_start_time }}</td>
+                            <td>
+                                {% if violation.actual_entry_time %}
+                                    {{ violation.actual_entry_time }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if violation.late_minutes %}
+                                    {{ violation.late_minutes }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ violation.status }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty">Нарушений пока нет</div>
+        {% endif %}
+
+        <div class="links">
+        <a href="/employees-page">Сотрудники</a>
+        <a href="/schedules-page">Графики работы</a>
+        <a href="/access-events-page">События СКУД</a>
+        <a href="/violations-page">Журнал нарушений</a>
+        <a href="/docs">Открыть Swagger API</a>
+        <a href="/violations">JSON нарушений</a>
+        <a href="/employees">JSON сотрудников</a>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Сотрудники</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        main {
+            padding: 30px 40px;
+        }
+
+        .top-links {
+            margin-bottom: 20px;
+        }
+
+        .top-links a {
+            display: inline-block;
+            margin-right: 12px;
+            color: #1f4e79;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .top-links a:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #eef3f7;
+            text-align: left;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        td {
+            border-top: 1px solid #e1e5e8;
+            padding: 10px;
+            font-size: 14px;
+        }
+        .employee-form {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    align-items: end;
+    margin-bottom: 10px;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row label {
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+.form-row input {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.button:hover {
+    background: #1d4ed8;
+}
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-size: 13px;
+            display: inline-block;
+        }
+
+        .active {
+            background: #16a34a;
+        }
+
+        .inactive {
+            background: #6b7280;
+        }
+
+        .empty {
+            color: #777;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Сотрудники больницы</h1>
+</header>
+
+<main>
+    <div class="top-links">
+        <a href="/dashboard">Панель мониторинга</a>
+        <a href="/violations-page">Журнал нарушений</a>
+        <a href="/docs">Swagger API</a>
+    </div>
+
+    <div class="section">
+    <h2>Добавить сотрудника</h2>
+
+    <form class="employee-form" action="/employees-page/create" method="post">
+        <div class="form-row">
+            <label>ФИО</label>
+            <input type="text" name="full_name" placeholder="Иванов Иван Иванович" required>
+        </div>
+
+        <div class="form-row">
+            <label>Отделение</label>
+            <input type="text" name="department" placeholder="Терапевтическое отделение" required>
+        </div>
+
+        <div class="form-row">
+            <label>Должность</label>
+            <input type="text" name="position" placeholder="Врач" required>
+        </div>
+
+        <div class="form-row">
+            <label>Номер карты</label>
+            <input type="text" name="card_id" placeholder="10003" required>
+        </div>
+
+        <button class="button" type="submit">Добавить сотрудника</button>
+    </form>
+</div>
+
+<div class="section">
+    <h2>Список сотрудников</h2>
+
+        {% if employees %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ФИО</th>
+                        <th>Отделение</th>
+                        <th>Должность</th>
+                        <th>Номер карты</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                        <tr>
+                            <td>{{ employee.id }}</td>
+                            <td>{{ employee.full_name }}</td>
+                            <td>{{ employee.department }}</td>
+                            <td>{{ employee.position }}</td>
+                            <td>{{ employee.card_id }}</td>
+                            <td>
+                                {% if employee.is_active %}
+                                    <span class="badge active">Активен</span>
+                                {% else %}
+                                    <span class="badge inactive">Неактивен</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty">Сотрудников пока нет</div>
+        {% endif %}
+    </div>
+</main>
+
+</body>
+</html>

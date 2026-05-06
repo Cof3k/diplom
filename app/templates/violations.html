@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Журнал нарушений</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        main {
+            padding: 30px 40px;
+        }
+
+        .top-links {
+            margin-bottom: 20px;
+        }
+
+        .top-links a {
+            display: inline-block;
+            margin-right: 12px;
+            color: #1f4e79;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .top-links a:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #eef3f7;
+            text-align: left;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        td {
+            border-top: 1px solid #e1e5e8;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-size: 13px;
+            display: inline-block;
+        }
+
+        .late {
+            background: #d97706;
+        }
+
+        .absence {
+            background: #dc2626;
+        }
+
+        .status {
+            background: #2563eb;
+        }
+
+        .empty {
+            color: #777;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Журнал нарушений посещаемости</h1>
+</header>
+
+<main>
+    <div class="top-links">
+        <a href="/dashboard">Панель мониторинга</a>
+        <a href="/employees-page">Сотрудники</a>
+        <a href="/docs">Swagger API</a>
+    </div>
+
+    <div class="section">
+        <h2>Список нарушений</h2>
+
+        {% if violations %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ID сотрудника</th>
+                        <th>Дата</th>
+                        <th>Тип нарушения</th>
+                        <th>Плановое время</th>
+                        <th>Фактическое время</th>
+                        <th>Минуты опоздания</th>
+                        <th>Статус</th>
+                        <th>Скриншот</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for violation in violations %}
+                        <tr>
+                            <td>{{ violation.id }}</td>
+                            <td>{{ violation.employee_id }}</td>
+                            <td>{{ violation.work_date }}</td>
+                            <td>
+                                {% if violation.violation_type == "Опоздание" %}
+                                    <span class="badge late">Опоздание</span>
+                                {% elif violation.violation_type == "Неявка" %}
+                                    <span class="badge absence">Неявка</span>
+                                {% else %}
+                                    {{ violation.violation_type }}
+                                {% endif %}
+                            </td>
+                            <td>{{ violation.planned_start_time }}</td>
+                            <td>
+                                {% if violation.actual_entry_time %}
+                                    {{ violation.actual_entry_time }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if violation.late_minutes is not none %}
+                                    {{ violation.late_minutes }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge status">{{ violation.status }}</span>
+                            </td>
+                            <td>
+                                {% if violation.screenshot_path %}
+                                    {{ violation.screenshot_path }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty">Нарушений пока нет</div>
+        {% endif %}
+    </div>
+</main>
+
+</body>
+</html>

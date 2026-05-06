@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>События СКУД</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        main {
+            padding: 30px 40px;
+        }
+
+        .top-links {
+            margin-bottom: 20px;
+        }
+
+        .top-links a {
+            display: inline-block;
+            margin-right: 12px;
+            color: #1f4e79;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .top-links a:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #eef3f7;
+            text-align: left;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        td {
+            border-top: 1px solid #e1e5e8;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .event-form {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+    margin-bottom: 10px;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row label {
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+.form-row input,
+.form-row select {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.button:hover {
+    background: #1d4ed8;
+}
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-size: 13px;
+            display: inline-block;
+        }
+
+        .in {
+            background: #16a34a;
+        }
+
+        .out {
+            background: #6b7280;
+        }
+
+        .empty {
+            color: #777;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>События системы контроля доступа</h1>
+</header>
+
+<main>
+    <div class="top-links">
+        <a href="/dashboard">Панель мониторинга</a>
+        <a href="/employees-page">Сотрудники</a>
+        <a href="/schedules-page">Графики работы</a>
+        <a href="/violations-page">Журнал нарушений</a>
+        <a href="/docs">Swagger API</a>
+    </div>
+
+    <div class="section">
+    <h2>Добавить событие СКУД</h2>
+
+    <form class="event-form" action="/access-events-page/create" method="post">
+        <div class="form-row">
+            <label>Сотрудник</label>
+            <select name="employee_id" required>
+                <option value="">Выберите сотрудника</option>
+                {% for employee in employees %}
+                    <option value="{{ employee.id }}">
+                        {{ employee.full_name }} — карта {{ employee.card_id }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label>Дата и время прохода</label>
+            <input type="datetime-local" name="event_time" required>
+        </div>
+
+        <div class="form-row">
+            <label>Направление</label>
+            <select name="direction" required>
+                <option value="IN">Вход</option>
+                <option value="OUT">Выход</option>
+            </select>
+        </div>
+
+        <button class="button" type="submit">Добавить событие</button>
+    </form>
+</div>
+
+<div class="section">
+    <h2>Список событий СКУД</h2>
+
+        {% if events %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ID сотрудника</th>
+                        <th>ФИО</th>
+                        <th>Номер карты</th>
+                        <th>Дата и время</th>
+                        <th>Направление</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                        <tr>
+                            <td>{{ event.id }}</td>
+                            <td>{{ event.employee_id }}</td>
+                            <td>
+                                {% if event.employee %}
+                                    {{ event.employee.full_name }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ event.card_id }}</td>
+                            <td>{{ event.event_time }}</td>
+                            <td>
+                                {% if event.direction == "IN" %}
+                                    <span class="badge in">Вход</span>
+                                {% elif event.direction == "OUT" %}
+                                    <span class="badge out">Выход</span>
+                                {% else %}
+                                    {{ event.direction }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty">Событий СКУД пока нет</div>
+        {% endif %}
+    </div>
+</main>
+
+</body>
+</html>
